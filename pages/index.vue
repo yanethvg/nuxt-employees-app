@@ -48,7 +48,7 @@
     </b-container>
 
     <div id="modal">
-      <b-modal id="create" title="Create Employee">
+      <b-modal id="create" title="Employee">
         <b-form @submit="createEmployee" @reset="resetForm">
           <b-form-group
             id="input-group-1"
@@ -139,7 +139,7 @@
 <script>
 import Vue from "vue";
 import VueToast from "vue-toast-notification";
-
+import { nextTick } from "vue";
 import "vue-toast-notification/dist/theme-sugar.css";
 
 Vue.use(VueToast);
@@ -255,6 +255,7 @@ export default Vue.extend({
         );
 
         let data = await response.json();
+
         this.subareas = data.subareas;
       } catch (error) {
         this.subareas = [];
@@ -262,7 +263,6 @@ export default Vue.extend({
       }
     },
     async newEmployee(employee) {
-      console.log("Hola");
       try {
         await fetch("http://localhost:3000/api/employees/", {
           method: "POST",
@@ -294,8 +294,22 @@ export default Vue.extend({
         );
 
         let data = await response.json();
-        console.log(data.employee);
         this.employee = data.employee;
+      } catch (error) {
+        Vue.$toast.error(error.message);
+      }
+    },
+    async getAreaWithId(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/areas/${id}`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        let data = await response.json();
+        this.area = data.area;
       } catch (error) {
         Vue.$toast.error(error.message);
       }
@@ -330,6 +344,13 @@ export default Vue.extend({
     showUpdate: async function (employee) {
       this.$bvModal.show("create");
       this.employee = employee;
+      this.subareas = [this.employee.subareas];
+
+      const area_id = this.employee.subareas.area_id;
+
+      this.area = this.areas.find((item) => {
+        return item.id == area_id;
+      }).id;
     },
   },
 });
