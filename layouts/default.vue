@@ -9,9 +9,6 @@
             <li class="nav-item">
               <NuxtLink to="/signin" class="nav-link">SignIn</NuxtLink>
             </li>
-            <!-- <li class="nav-item">
-              <NuxtLink to="/signup" class="nav-link">SignUp</NuxtLink>
-            </li> -->
           </ul>
 
           <ul class="navbar-nav me-auto mb-2 mb-md-0" v-if="auth">

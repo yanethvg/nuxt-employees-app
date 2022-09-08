@@ -14,7 +14,9 @@
           />
         </div>
         <div class="col-3">
-          <b-button pill variant="info">Create</b-button>
+          <b-button pill variant="info" v-on:click="getEmployees"
+            >Search</b-button
+          >
         </div>
       </div>
       <div class="float-right ml-auto">
@@ -25,7 +27,15 @@
     </div>
     <b-container fluid class="text-light text-center">
       <b-row>
-        <b-table striped hover :items="employees" :fields="fields">
+        <b-table
+          striped
+          hover
+          show-empty
+          :items="employees"
+          :fields="fields"
+          :current-page="currentPage"
+          :per-page="0"
+        >
           <template #cell(subareas)="data">
             {{ data.item.subareas.name }}
           </template>
@@ -43,7 +53,9 @@
           :total-rows="rows"
           :per-page="perPage"
           aria-controls="my-table"
-        ></b-pagination>
+          @change="handlePage"
+        >
+        </b-pagination>
       </b-row>
     </b-container>
 
@@ -197,12 +209,26 @@ export default Vue.extend({
   async mounted() {
     try {
       this.$nuxt.$emit("auth", true);
+      console.log(this.auth);
     } catch (e) {
       this.$router.push("/signin");
       this.$nuxt.$emit("auth", false);
     }
   },
+  // watch: {
+  //   handlePage: {
+  //     handler: function (value) {
+  //       this.getEmployees().catch((error) => {
+  //         console.error(error);
+  //       });
+  //     },
+  //   },
+  // },
   methods: {
+    async handlePage(page) {
+      this.currentPage = page;
+      await this.getEmployees();
+    },
     async createEmployee(event) {
       event.preventDefault();
       if (this.employee.id) {
@@ -216,8 +242,13 @@ export default Vue.extend({
       this.employee = {};
     },
     async getEmployees() {
+      let url = `http://localhost:3000/api/employees?page=${this.currentPage}`;
+      if (this.search) {
+        url = `${url}&search=${this.search}`;
+      }
+      console.log(url);
       try {
-        const response = await fetch("http://localhost:3000/api/employees", {
+        const response = await fetch(url, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -300,6 +331,7 @@ export default Vue.extend({
             subarea_id: employee.subarea_id,
           }),
         });
+        await this.getEmployees();
         Vue.$toast.success("record updated sucessfully");
       } catch (error) {
         Vue.$toast.error(error.message);
