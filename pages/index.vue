@@ -26,37 +26,34 @@
       </div>
     </div>
     <b-container fluid class="text-light text-center">
-      <b-row>
-        <b-table
-          striped
-          hover
-          show-empty
-          :items="employees"
-          :fields="fields"
-          :current-page="currentPage"
-          :per-page="0"
-        >
-          <template #cell(subareas)="data">
-            {{ data.item.subareas.name }}
-          </template>
-          <template #cell(action)="data">
-            <b-button variant="danger" @click="removeEmployee(data.item)"
-              >Delete</b-button
-            >
-            <b-button variant="info" @click="showUpdate(data.item)"
-              >Edit</b-button
-            >
-          </template>
-        </b-table>
-        <b-pagination
-          v-model="currentPage"
-          :total-rows="rows"
-          :per-page="perPage"
-          aria-controls="my-table"
-          @change="handlePage"
-        >
-        </b-pagination>
-      </b-row>
+      <b-table
+        striped
+        hover
+        show-empty
+        :items="employees"
+        :fields="fields"
+        :current-page="currentPage"
+        :per-page="0"
+      >
+        <template #cell(subareas)="data">
+          {{ data.item.subareas.name }}
+        </template>
+        <template #cell(action)="data">
+          <b-button variant="danger" @click="removeEmployee(data.item)"
+            >Delete</b-button
+          >
+          <b-button variant="info" @click="showUpdate(data.item)"
+            >Edit</b-button
+          >
+        </template>
+      </b-table>
+      <b-pagination
+        :total-rows="totalItems"
+        v-model="currentPage"
+        :per-page="perPage"
+        @change="handlePageChange"
+      >
+      </b-pagination>
     </b-container>
 
     <div id="modal">
@@ -164,9 +161,12 @@ export default Vue.extend({
       areas: [],
       subareas: [],
       area: null,
-      perPage: 3,
+      // search and paginate
+      perPage: 10,
       currentPage: 1,
       search: "",
+      totalItems: 0,
+      // search and paginate
       fields: [
         {
           key: "name",
@@ -209,24 +209,14 @@ export default Vue.extend({
   async mounted() {
     try {
       this.$nuxt.$emit("auth", true);
-      console.log(this.auth);
     } catch (e) {
       this.$router.push("/signin");
       this.$nuxt.$emit("auth", false);
     }
   },
-  // watch: {
-  //   handlePage: {
-  //     handler: function (value) {
-  //       this.getEmployees().catch((error) => {
-  //         console.error(error);
-  //       });
-  //     },
-  //   },
-  // },
   methods: {
-    async handlePage(page) {
-      this.currentPage = page;
+    async handlePageChange(value) {
+      this.currentPage = value;
       await this.getEmployees();
     },
     async createEmployee(event) {
@@ -246,7 +236,6 @@ export default Vue.extend({
       if (this.search) {
         url = `${url}&search=${this.search}`;
       }
-      console.log(url);
       try {
         const response = await fetch(url, {
           headers: {
@@ -257,7 +246,7 @@ export default Vue.extend({
 
         let data = await response.json();
         this.employees = data.employees.rows;
-        this.perPage = data.employees.count;
+        this.totalItems = data.employees.count;
       } catch (error) {
         Vue.$toast.error(error.message);
       }
