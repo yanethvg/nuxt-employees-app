@@ -103,7 +103,6 @@ export default {
           credentials: "include",
           body: JSON.stringify(this.employee),
         });
-        console.log(response);
       } catch (error) {
         Vue.$toast.error(error.message);
       }
