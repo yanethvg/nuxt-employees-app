@@ -203,8 +203,9 @@ export default Vue.extend({
     }
   },
   methods: {
-    createEmployee(event) {
+    async createEmployee(event) {
       event.preventDefault();
+      this.newEmployee(this.employee);
     },
     resetForm(event) {
       event.preventDefault();
@@ -220,8 +221,8 @@ export default Vue.extend({
         });
 
         let data = await response.json();
-        this.employees = data.rows;
-        this.perPage = data.count;
+        this.employees = data.employees.rows;
+        this.perPage = data.employees.count;
       } catch (error) {
         Vue.$toast.error(error.message);
       }
@@ -260,6 +261,26 @@ export default Vue.extend({
         Vue.$toast.error(error.message);
       }
     },
+    async newEmployee(employee) {
+      console.log("Hola");
+      try {
+        await fetch("http://localhost:3000/api/employees/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: employee.name,
+            last_name: employee.last_name,
+            type_document: employee.type_document,
+            document: employee.document,
+            subarea_id: employee.subarea_id,
+          }),
+        });
+        Vue.$toast.success("record created sucessfully");
+      } catch (error) {
+        Vue.$toast.error(error.message);
+      }
+    },
     async getEmployee(id) {
       try {
         const response = await fetch(
@@ -273,6 +294,7 @@ export default Vue.extend({
         );
 
         let data = await response.json();
+        console.log(data.employee);
         this.employee = data.employee;
       } catch (error) {
         Vue.$toast.error(error.message);
@@ -305,7 +327,7 @@ export default Vue.extend({
       this.employee = {};
     },
 
-    showUpdate: function (employee) {
+    showUpdate: async function (employee) {
       this.$bvModal.show("create");
       this.employee = employee;
     },
