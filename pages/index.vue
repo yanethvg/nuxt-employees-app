@@ -205,7 +205,11 @@ export default Vue.extend({
   methods: {
     async createEmployee(event) {
       event.preventDefault();
-      this.newEmployee(this.employee);
+      if (this.employee.id) {
+        this.updateEmployee(this.employee);
+      } else {
+        this.newEmployee(this.employee);
+      }
     },
     resetForm(event) {
       event.preventDefault();
@@ -276,7 +280,27 @@ export default Vue.extend({
             subarea_id: employee.subarea_id,
           }),
         });
+        await this.getEmployees();
         Vue.$toast.success("record created sucessfully");
+      } catch (error) {
+        Vue.$toast.error(error.message);
+      }
+    },
+    async updateEmployee(employee) {
+      try {
+        await fetch(`http://localhost:3000/api/employees/${employee.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: employee.name,
+            last_name: employee.last_name,
+            type_document: employee.type_document,
+            document: employee.document,
+            subarea_id: employee.subarea_id,
+          }),
+        });
+        Vue.$toast.success("record updated sucessfully");
       } catch (error) {
         Vue.$toast.error(error.message);
       }
