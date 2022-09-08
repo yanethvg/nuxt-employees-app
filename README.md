@@ -1,6 +1,4 @@
-# nuxt-employees-app
-
-> My extraordinary Nuxt.js project
+# Frontend Technical Test 
 
 ## Build Setup
 
